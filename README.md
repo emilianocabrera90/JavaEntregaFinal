@@ -19,4 +19,4 @@ API REST para gestionar productos y carritos de compra usando Node.js, Express y
 1. Clonar el repositorio:
 
 ```bash
-git clone <url-del-repo>
+git clone https://github.com/emilianocabrera90/EmilianoCabreraEntrega1
