@@ -1,0 +1,41 @@
+### Crear producto
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "title": "Teclado Mecánico",
+  "description": "RGB Switch Red",
+  "code": "KEY-RGB-RED",
+  "price": 80000,
+  "stock": 10,
+  "category": "peripherals",
+  "thumbnails": ["/img/keyboard.png"]
+}
+
+### Listar productos
+GET http://localhost:8080/api/products
+
+### Obtener producto por id (copiá el id del producto creado y reemplazá aquí)
+GET http://localhost:8080/api/products/{{productId}}
+
+### Actualizar producto (reemplazá {{productId}} con el id real)
+PUT http://localhost:8080/api/products/{{productId}}
+Content-Type: application/json
+
+{
+  "price": 85000,
+  "stock": 8
+}
+
+### Eliminar producto (reemplazá {{productId}} con el id real)
+DELETE http://localhost:8080/api/products/{{productId}}
+
+### Crear carrito nuevo
+POST http://localhost:8080/api/carts
+
+### Listar productos de un carrito (reemplazá {{cartId}} con el id real)
+GET http://localhost:8080/api/carts/{{cartId}}
+
+### Agregar producto a carrito (reemplazá {{cartId}} y {{productId}} con ids reales)
+POST http://localhost:8080/api/carts/{{cartId}}/product/{{productId}}
+

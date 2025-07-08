@@ -1,0 +1,15 @@
+[
+  {
+    "id": "5523de8c-6193-42db-9976-3c9b53e903fb",
+    "status": true,
+    "title": "Teclado Mecánico",
+    "description": "RGB Switch Red",
+    "code": "KEY-RGB-RED",
+    "price": 80000,
+    "stock": 10,
+    "category": "peripherals",
+    "thumbnails": [
+      "/img/keyboard.png"
+    ]
+  }
+]
