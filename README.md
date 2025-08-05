@@ -22,4 +22,4 @@ npm run dev
 1. Clonar el repositorio:
 
 ```bash
-git clone https://github.com/emilianocabrera90/EmilianoCabreraEntrega1
+git clone https://github.com/emilianocabrera90/JavaEntrega2
