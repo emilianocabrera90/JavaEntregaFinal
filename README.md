@@ -1,18 +1,21 @@
-# ecommerce-api
+# Ecommerce API con WebSockets y Handlebars
 
-API REST para gestionar productos y carritos de compra usando Node.js, Express y persistencia en archivos JSON.
+API para gestión de productos y carritos con actualización en tiempo real usando WebSockets.
 
----
+## Tecnologías usadas
 
-## Tecnologías
+- Node.js
+- Express
+- Handlebars (templating)
+- Socket.IO (WebSockets)
+- JSON files como base de datos simple
 
-- Node.js  
-- Express  
-- Sistema de archivos para persistencia (`products.json` y `carts.json`)  
-- REST Client para pruebas (VS Code)  
-- UUID para generación de IDs únicos  
+## Instalación
 
----
+```bash
+npm install
+npm run dev
+
 
 ## Instalación
 
