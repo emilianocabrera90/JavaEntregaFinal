@@ -1,15 +1,24 @@
 [
   {
-    "id": "5523de8c-6193-42db-9976-3c9b53e903fb",
+    "id": "1a63c4d8-efd5-48de-aae6-8be6485963e9",
     "status": true,
-    "title": "Teclado Mecánico",
-    "description": "RGB Switch Red",
-    "code": "KEY-RGB-RED",
-    "price": 80000,
+    "title": "teclado",
+    "description": "teclado mac",
+    "code": "1",
+    "price": 1000,
     "stock": 10,
-    "category": "peripherals",
-    "thumbnails": [
-      "/img/keyboard.png"
-    ]
+    "category": "electronica",
+    "thumbnails": []
+  },
+  {
+    "id": "72c8ec4d-b7ee-4b58-b090-20d4049a5e98",
+    "status": true,
+    "title": "mouse mac",
+    "description": "mouse",
+    "code": "2",
+    "price": 500,
+    "stock": 20,
+    "category": "electronica",
+    "thumbnails": []
   }
 ]

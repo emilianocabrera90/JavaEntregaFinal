@@ -1,0 +1,126 @@
+{{!-- layouts/main.handlebars será el layout base --}}
+{{!-- Aquí extendemos ese layout --}}
+
+{{!-- Contenido de la página --}}
+<h1>Productos en Tiempo Real</h1>
+
+<div id="product-list">
+  {{#each products}}
+    <div class="product" data-id="{{this.id}}">
+      <h3>{{this.title}}</h3>
+      <p>{{this.description}}</p>
+      <p><strong>Precio:</strong> ${{this.price}}</p>
+      <p><strong>Stock:</strong> {{this.stock}}</p>
+      <button class="delete-btn" data-id="{{this.id}}">Eliminar</button>
+    </div>
+  {{/each}}
+</div>
+
+<hr>
+
+<h2>Agregar Producto</h2>
+<form id="product-form">
+  <input type="text" name="title" placeholder="Título" required />
+  <input type="text" name="description" placeholder="Descripción" required />
+  <input type="text" name="code" placeholder="Código" required />
+  <input type="number" name="price" placeholder="Precio" required min="0" />
+  <input type="number" name="stock" placeholder="Stock" required min="0" />
+  <input type="text" name="category" placeholder="Categoría" required />
+  <input type="text" name="thumbnails" placeholder="URL de imagen (separar con comas)" />
+  <button type="submit">Agregar Producto</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  
+  function renderProducts(products) {
+    const container = document.getElementById('product-list');
+    container.innerHTML = '';
+    products.forEach(prod => {
+      const div = document.createElement('div');
+      div.classList.add('product');
+      div.setAttribute('data-id', prod.id);
+      div.innerHTML = `
+        <h3>${prod.title}</h3>
+        <p>${prod.description}</p>
+        <p><strong>Precio:</strong> $${prod.price}</p>
+        <p><strong>Stock:</strong> ${prod.stock}</p>
+        <button class="delete-btn" data-id="${prod.id}">Eliminar</button>
+      `;
+      container.appendChild(div);
+    });
+    attachDeleteEvents();
+  }
+
+  
+  socket.on('productAdded', (newProduct) => {
+    const container = document.getElementById('product-list');
+    const div = document.createElement('div');
+    div.classList.add('product');
+    div.setAttribute('data-id', newProduct.id);
+    div.innerHTML = `
+      <h3>${newProduct.title}</h3>
+      <p>${newProduct.description}</p>
+      <p><strong>Precio:</strong> $${newProduct.price}</p>
+      <p><strong>Stock:</strong> ${newProduct.stock}</p>
+      <button class="delete-btn" data-id="${newProduct.id}">Eliminar</button>
+    `;
+    container.appendChild(div);
+    attachDeleteEvents();
+  });
+
+  
+  socket.on('productDeleted', (deletedId) => {
+    const productDiv = document.querySelector(`.product[data-id="${deletedId}"]`);
+    if (productDiv) productDiv.remove();
+  });
+
+  
+  const form = document.getElementById('product-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const thumbnailsStr = formData.get('thumbnails').trim();
+    const thumbnailsArr = thumbnailsStr ? thumbnailsStr.split(',').map(s => s.trim()) : [];
+
+    const newProduct = {
+      title: formData.get('title').trim(),
+      description: formData.get('description').trim(),
+      code: formData.get('code').trim(),
+      price: Number(formData.get('price')),
+      stock: Number(formData.get('stock')),
+      category: formData.get('category').trim(),
+      thumbnails: thumbnailsArr
+    };
+
+    socket.emit('addProduct', newProduct);
+
+    form.reset();
+  });
+
+  
+  function attachDeleteEvents() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-id');
+        socket.emit('deleteProduct', id);
+      };
+    });
+  }
+
+  attachDeleteEvents();
+
+  
+  socket.on('connect', () => {
+    socket.emit('requestProducts');
+  });
+
+  
+  socket.on('productList', (products) => {
+    renderProducts(products);
+  });
+</script>
