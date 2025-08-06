@@ -1,62 +1,73 @@
-
-const fs = require('fs').promises;
-const path = require('path');
-const generateId = require('../utils/idGenerator');
-
-const DATA_PATH = path.join(__dirname, '../data/carts.json');
+const Cart = require('../models/cart.model');
 
 class CartManager {
-  async _readFile() {
-    try {
-      const data = await fs.readFile(DATA_PATH, 'utf-8');
-      return JSON.parse(data);
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        await fs.writeFile(DATA_PATH, '[]');
-        return [];
-      }
-      throw err;
-    }
-  }
-
-  async _writeFile(carts) {
-    await fs.writeFile(DATA_PATH, JSON.stringify(carts, null, 2));
-  }
-
   async createCart() {
-    const carts = await this._readFile();
-    const newCart = {
-      id: generateId(),
-      products: []
-    };
-    carts.push(newCart);
-    await this._writeFile(carts);
-    return newCart;
+    const newCart = new Cart({ products: [] });
+    return await newCart.save();
   }
 
   async getCartById(id) {
-    const carts = await this._readFile();
-    return carts.find(c => c.id === id);
+    return await Cart.findById(id).populate('products.product').lean();
   }
 
   async addProductToCart(cid, pid) {
-    const carts = await this._readFile();
-    const cartIndex = carts.findIndex(c => c.id === cid);
-    if (cartIndex === -1) return null;
+    const cart = await Cart.findById(cid);
+    if (!cart) return null;
 
-    const cart = carts[cartIndex];
-
-    const productInCart = cart.products.find(p => p.product === pid);
-    if (productInCart) {
-      productInCart.quantity += 1;
+    const prodIndex = cart.products.findIndex(p => p.product.toString() === pid);
+    if (prodIndex !== -1) {
+      cart.products[prodIndex].quantity += 1;
     } else {
       cart.products.push({ product: pid, quantity: 1 });
     }
 
-    carts[cartIndex] = cart;
-    await this._writeFile(carts);
-    return cart;
+    await cart.save();
+    return cart.toObject();
+  }
+
+  async removeProductFromCart(cid, pid) {
+    const cart = await Cart.findById(cid);
+    if (!cart) return null;
+
+    cart.products = cart.products.filter(p => p.product.toString() !== pid);
+    await cart.save();
+    return cart.toObject();
+  }
+
+  async updateProducts(cid, products) {
+    const cart = await Cart.findById(cid);
+    if (!cart) return null;
+
+    cart.products = products.map(p => ({
+      product: p.product,
+      quantity: p.quantity
+    }));
+
+    await cart.save();
+    return cart.toObject();
+  }
+
+  async updateProductQuantity(cid, pid, quantity) {
+    const cart = await Cart.findById(cid);
+    if (!cart) return null;
+
+    const prod = cart.products.find(p => p.product.toString() === pid);
+    if (!prod) return null;
+
+    prod.quantity = quantity;
+    await cart.save();
+    return cart.toObject();
+  }
+
+  async clearCart(cid) {
+    const cart = await Cart.findById(cid);
+    if (!cart) return null;
+
+    cart.products = [];
+    await cart.save();
+    return cart.toObject();
   }
 }
 
 module.exports = new CartManager();
+

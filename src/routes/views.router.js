@@ -1,27 +1,18 @@
-
 const express = require('express');
 const router = express.Router();
+const viewsController = require('../controllers/views.controller');
 
-const productManager = require('../managers/ProductManager');
-
-
-router.get('/', async (req, res) => {
-  try {
-    const products = await productManager.getProducts();
-    res.render('home', { products });
-  } catch (error) {
-    res.status(500).send('Error al cargar productos');
-  }
+router.get('/', (req, res) => {
+  res.redirect('/products');
 });
 
-
-router.get('/realtimeproducts', async (req, res) => {
-  try {
-    const products = await productManager.getProducts();
-    res.render('realTimeProducts', { products });
-  } catch (error) {
-    res.status(500).send('Error al cargar productos en tiempo real');
-  }
+router.get('/products', viewsController.productsList);
+router.get('/products/:pid', viewsController.productDetail);
+router.get('/carts/:cid', viewsController.cartDetail);
+router.get('/realtimeproducts', (req, res) => {
+  res.render('realTimeProducts');  
 });
+
 
 module.exports = router;
+

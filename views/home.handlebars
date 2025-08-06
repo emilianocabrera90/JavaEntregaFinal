@@ -1,12 +1,23 @@
-<h1>Listado de Productos</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Home - Listado de Productos</title>
+  <link rel="stylesheet" href="/public/css/styles.css" />
+</head>
+<body>
+  <h1>Listado de Productos</h1>
 
-<div id="product-list">
-  {{#each products}}
-    <div class="product" data-id="{{this.id}}">
-      <h3>{{this.title}}</h3>
-      <p>{{this.description}}</p>
-      <p><strong>Precio:</strong> ${{this.price}}</p>
-      <p><strong>Stock:</strong> {{this.stock}}</p>
-    </div>
-  {{/each}}
-</div>
+  <div id="product-list">
+    {{#each products}}
+      <div class="product" data-id="{{this.id}}">
+        <h3>{{this.title}}</h3>
+        <p>{{this.description}}</p>
+        <p><strong>Precio:</strong> ${{this.price}}</p>
+        <p><strong>Stock:</strong> {{this.stock}}</p>
+      </div>
+    {{/each}}
+  </div>
+</body>
+</html>
+

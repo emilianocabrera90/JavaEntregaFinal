@@ -1,82 +1,35 @@
-
-const fs = require('fs').promises;
-const path = require('path');
-const generateId = require('../utils/idGenerator');
-
-const DATA_PATH = path.join(__dirname, '../data/products.json');
+const Product = require('../models/product.model');
 
 class ProductManager {
-  
-  async _readFile () {
-  try {
-    const data = await fs.readFile(DATA_PATH, 'utf-8'); 
-    return JSON.parse(data);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      await fs.writeFile(DATA_PATH, '[]');
-      return [];
-    }
-    throw err;
-  }
-}
-
-
-  
-  async _writeFile (products) {
-    await fs.writeFile(DATA_PATH, JSON.stringify(products, null, 2));
+  async getProducts(filter = {}, options = {}) {
+    return await Product.paginate(filter, options);
   }
 
-  
-  async getProducts () {
-    return this._readFile();
+  async getProductById(id) {
+    return await Product.findById(id).lean();
   }
 
-  async getProductById (id) {
-    const products = await this._readFile();
-    return products.find(p => p.id === id);
-  }
-
-  async addProduct (productData) {
-    const products = await this._readFile();
-
+  async addProduct(productData) {
     
-    if (products.some(p => p.code === productData.code)) {
+    const exists = await Product.findOne({ code: productData.code });
+    if (exists) {
       throw new Error('El código ya existe');
     }
 
-    const newProduct = {
-      id: generateId(),
-      status: true,                
-      ...productData
-    };
-
-    products.push(newProduct);
-    await this._writeFile(products);
-    return newProduct;
+    const newProduct = new Product(productData);
+    return await newProduct.save();
   }
 
-  async updateProduct (id, updates) {
-    const products = await this._readFile();
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return null;
-
-    
-    const { id: _ignored, ...rest } = updates;
-    products[index] = { ...products[index], ...rest };
-
-    await this._writeFile(products);
-    return products[index];
+  async updateProduct(id, updates) {
+    return await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
   }
 
-  async deleteProduct (id) {
-    const products = await this._readFile();
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return false;
-
-    products.splice(index, 1);
-    await this._writeFile(products);
-    return true;
+  async deleteProduct(id) {
+    const result = await Product.findByIdAndDelete(id);
+    return result !== null;
   }
 }
 
 module.exports = new ProductManager();
+
+

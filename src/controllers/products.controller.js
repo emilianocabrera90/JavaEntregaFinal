@@ -2,8 +2,35 @@ const productManager = require('../managers/ProductManager');
 
 exports.getAll = async (req, res) => {
   try {
-    const products = await productManager.getProducts();
-    res.json(products);
+    const { limit = 10, page = 1, sort, query } = req.query;
+
+    const filter = {};
+    if (query) {
+      if (query === 'available') filter.status = true;
+      else filter.category = query;
+    }
+
+    const options = {
+      limit: parseInt(limit),
+      page: parseInt(page),
+      sort: sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {},
+      lean: true
+    };
+
+    const result = await productManager.getProducts(filter, options);
+
+    res.json({
+      status: 'success',
+      payload: result.docs,
+      totalPages: result.totalPages,
+      prevPage: result.hasPrevPage ? result.prevPage : null,
+      nextPage: result.hasNextPage ? result.nextPage : null,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevLink: result.hasPrevPage ? `/api/products?limit=${limit}&page=${result.prevPage}&sort=${sort || ''}&query=${query || ''}` : null,
+      nextLink: result.hasNextPage ? `/api/products?limit=${limit}&page=${result.nextPage}&sort=${sort || ''}&query=${query || ''}` : null
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -22,11 +49,6 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const newProduct = await productManager.addProduct(req.body);
-
-    
-    const io = req.app.get('io');
-    io.emit('productAdded', newProduct);
-
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -47,15 +69,13 @@ exports.remove = async (req, res) => {
   try {
     const deleted = await productManager.deleteProduct(req.params.pid);
     if (!deleted) return res.status(404).json({ error: 'Producto no encontrado' });
-
-    
-    const io = req.app.get('io');
-    io.emit('productDeleted', req.params.pid);
-
     res.json({ status: 'Producto eliminado' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 

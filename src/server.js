@@ -1,34 +1,45 @@
 const http = require('http');
+const mongoose = require('mongoose');
 const app = require('./app');
 const { Server } = require('socket.io');
 
 const PORT = process.env.PORT || 8080;
 
 const server = http.createServer(app);
-
 const io = new Server(server);
 
-// Hacemos io accesible desde app para emitir eventos desde controladores
-app.set('io', io);
-
-const productManager = require('./managers/ProductManager');
-
-io.on('connection', (socket) => {
-  console.log('🔵 Nuevo cliente conectado, id:', socket.id);
-
-  // Enviar lista completa al cliente que se conecta
-  socket.emit('productList', async () => {
-    const products = await productManager.getProducts();
-    socket.emit('productList', products);
+// Conexión a MongoDB sin opciones obsoletas
+mongoose.connect('mongodb://localhost:27017/ecommerce')
+  .then(() => {
+    console.log('✅ Conectado a MongoDB');
+    server.listen(PORT, () => {
+      console.log(`🛒 E‑commerce API corriendo en http://localhost:${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ Error al conectar a MongoDB:', err);
   });
 
-  // También enviamos lista completa a petición del cliente
+// Pasamos instancia de Socket.IO a app
+app.set('io', io);
+
+// WebSocket: lógica de productos en tiempo real
+const productManager = require('./managers/ProductManager');
+
+io.on('connection', async (socket) => {
+  console.log('🔵 Nuevo cliente conectado, id:', socket.id);
+
+  // Enviar lista inicial de productos
+  const products = await productManager.getProducts();
+  socket.emit('productList', products);
+
+  // Reenviar lista completa si lo piden
   socket.on('requestProducts', async () => {
     const products = await productManager.getProducts();
     socket.emit('productList', products);
   });
 
-  // Escuchar evento para agregar producto
+  // Agregar producto
   socket.on('addProduct', async (newProductData) => {
     try {
       const newProduct = await productManager.addProduct(newProductData);
@@ -38,7 +49,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Escuchar evento para eliminar producto
+  // Eliminar producto
   socket.on('deleteProduct', async (productId) => {
     try {
       const deleted = await productManager.deleteProduct(productId);
@@ -52,15 +63,13 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Desconexión
   socket.on('disconnect', () => {
     console.log('🔴 Cliente desconectado, id:', socket.id);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🛒  E‑commerce API corriendo en http://localhost:${PORT}`);
-});
-
+// Manejo de cierre
 process.on('unhandledRejection', (reason) => {
   console.error('🔴  Unhandled Promise Rejection:', reason);
 });
@@ -75,4 +84,3 @@ function shutdown() {
     process.exit(0);
   });
 }
-
