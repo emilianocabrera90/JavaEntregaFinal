@@ -67,7 +67,12 @@ class CartManager {
     await cart.save();
     return cart.toObject();
   }
+
+  async getAll() {
+    return await Cart.find().lean();
+  }
 }
 
 module.exports = new CartManager();
+
 

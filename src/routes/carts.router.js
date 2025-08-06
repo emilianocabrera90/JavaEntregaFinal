@@ -1,6 +1,17 @@
+// carts.router.js (completo con nuevo endpoint)
 const express = require('express');
 const router = express.Router();
-const cartsController = require('../controllers/carts.controller');
+const cartsController = require('../controllers/carts.controller'); // asumiendo que usás este controller
+
+// Nuevo endpoint para listar todos los carritos
+router.get('/', async (req, res) => {
+  try {
+    const carts = await cartsController.getAll(); // lo definimos en el controller
+    res.json(carts);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener carritos' });
+  }
+});
 
 // Crear carrito
 router.post('/', cartsController.create);
@@ -24,6 +35,7 @@ router.put('/:cid/products/:pid', cartsController.updateProductQuantity);
 router.delete('/:cid', cartsController.clearCart);
 
 module.exports = router;
+
 
 
 
